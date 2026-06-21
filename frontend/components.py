@@ -88,25 +88,38 @@ def render_gauge(title: str, value: int, color: str = None):
     st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
 
 def module_panel(title: str, data: dict):
-    """Renders a panel displaying module-specific data without jargon."""
-    html = f"""
-    <div class="module-panel">
-        <h3>{title}</h3>
-    """
-    for key, val in data.items():
-        # Highlight critical values
-        val_style = ""
-        if str(val) in ["Detected", "Irregular"] or (isinstance(val, str) and "%" in val and int(val.replace("%", "")) >= 80):
-            val_style = "color: #dc3545; font-weight: 800;"
-            
-        html += f"""
-        <div class="data-row">
-            <span class="data-label">{key}:</span>
-            <span class="data-value" style="{val_style}">{val}</span>
-        </div>
-        """
-    html += "</div>"
-    st.markdown(html, unsafe_allow_html=True)
+    """Render a clean module panel using native Streamlit components."""
+
+    with st.container(border=True):
+
+        st.subheader(title)
+
+        for key, val in data.items():
+
+            col1, col2 = st.columns([2, 1])
+
+            with col1:
+                st.markdown(f"**{key}**")
+
+            with col2:
+                if str(val) == "Detected":
+                    st.error(val)
+
+                elif str(val) == "Irregular":
+                    st.warning(val)
+
+                elif (
+                    isinstance(val, str)
+                    and "%" in val
+                    and val.replace("%", "").isdigit()
+                    and int(val.replace("%", "")) >= 80
+                ):
+                    st.error(val)
+
+                else:
+                    st.success(val)
+
+        st.markdown("")
 
 def timeline_event(time: str, text: str):
     """Renders a single event in the vertical timeline."""
